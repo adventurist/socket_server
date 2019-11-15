@@ -8,29 +8,28 @@
 
 #include <sys/socket.h>
 #include "headers/constants.h"
-#include "headers/tcplistener.h"
+#include "headers/socket_listener.h"
 int listening() { return socket(AF_INET, SOCK_STREAM, 0); }
 
-TcpListener::TcpListener(std::string ipAddress, int port,
-                         MessageReceivedHandler handler)
-    : m_ipAddress(ipAddress), m_port(port), MessageReceived(handler) {}
+SocketListener::SocketListener(std::string ip_address, int port)
+    : m_ip_address(ip_address), m_port(port) {}
 
 // destructor
-TcpListener::~TcpListener() { cleanup(); }
+SocketListener::~SocketListener() { cleanup(); }
 
 // Send message to client
-void TcpListener::sendMessage(int clientSocket, std::string msg) {
+void SocketListener::sendMessage(int clientSocket, std::string msg) {
   send(clientSocket, msg.c_str(), msg.size() + 1, 0);
 }
 
 // Initialize
-bool TcpListener::init() {
+bool SocketListener::init() {
   std::cout << "Initializing socket listener" << std::endl;
   return true;
 }
 
 // Main process loop
-void TcpListener::run() {
+void SocketListener::run() {
   char* buf[MAX_BUFFER_SIZE];
 
   while (true) {
@@ -50,9 +49,10 @@ void TcpListener::run() {
         int bytesReceived = 0;
         bytesReceived = recv(socket, buf, MAX_BUFFER_SIZE, 0);
         if (bytesReceived > 0) {
+          // TODO: implement a proper C++ cast
           const char* constString = (const char*)buf;
           std::cout << "Received: " << constString << std::endl;
-          MessageReceived(this, socket, std::string(constString));
+          onMessageReceived(socket, std::string(constString));
         } else {
           std::cout << "client disconnected" << std::endl;
           break;
@@ -64,32 +64,37 @@ void TcpListener::run() {
 }
 
 // Cleanup
-void TcpListener::cleanup() { std::cout << "Cleaning up" << std::endl; }
+void SocketListener::cleanup() { std::cout << "Cleaning up" << std::endl; }
 
-int TcpListener::createSocket() {
+int SocketListener::createSocket() {
   int listening = socket(AF_INET, SOCK_STREAM, 0);
 
   if (listening != SOCKET_ERROR) {
+    // TODO: whatsup with the variable name "hint" ?
     sockaddr_in hint;
     hint.sin_family = AF_INET;
     hint.sin_port = htons(m_port);
-    inet_pton(AF_INET, m_ipAddress.c_str(), &hint.sin_addr);
+    inet_pton(AF_INET, m_ip_address.c_str(), &hint.sin_addr);
 
-    int bindOk = bind(listening, (sockaddr*)&hint, sizeof(hint));
-    if (bindOk != SOCKET_ERROR) {
-      int listenOk = listen(listening, SOMAXCONN);
-      if (listenOk == SOCKET_ERROR) {
-        return -1;
+    int bind_result = bind(listening, (sockaddr*)&hint, sizeof(hint));
+    if (bind_result != SOCKET_ERROR) {
+      int listen_result = listen(listening, SOMAXCONN);
+      if (listen_result == SOCKET_ERROR) {
+        return WAIT_SOCKET_FAILURE;
       }
     } else {
-      return -1;
+      return WAIT_SOCKET_FAILURE;
     }
   }
 
   return listening;
 }
 
-int TcpListener::waitForConnection(int listening) {
+int SocketListener::waitForConnection(int listening) {
   int client = accept(listening, NULL, NULL);
   return client;
+}
+
+void SocketListener::onMessageReceived(int socket_id, std::string message) {
+  sendMessage(socket_id, message);
 }

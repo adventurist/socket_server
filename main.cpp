@@ -1,12 +1,9 @@
 #include <iostream>
 #include <string>
-#include "headers/tcplistener.h"
-
-void listener_message_received(TcpListener* listener, int client,
-                               std::string msg);
+#include "headers/socket_listener.h"
 
 int main() {
-  TcpListener server("0.0.0.0", 9009, listener_message_received);
+  SocketListener server("0.0.0.0", 9009);
 
   if (server.init()) {
     server.run();
@@ -14,7 +11,3 @@ int main() {
   return 0;
 }
 
-void listener_message_received(TcpListener* listener, int client,
-                               std::string msg) {
-  listener->sendMessage(client, msg);
-}
