@@ -1,42 +1,42 @@
-#include <string>
 #include <sys/socket.h>
+#include <string>
 
 #define MAX_BUFFER_SIZE (49152)
-class CTcpListener;
+class TcpListener;
 
-typedef void (*MessageReceivedHandler)(CTcpListener* listener, int socketId, std::string msg);
+typedef void (*MessageReceivedHandler)(TcpListener* listener, int socketId,
+                                       std::string msg);
 
-class CTcpListener {
-  public:
-    // constructor
-    CTcpListener(std::string ipAddress, int port, MessageReceivedHandler handler);
+class TcpListener {
+ public:
+  // constructor
+  TcpListener(std::string ipAddress, int port, MessageReceivedHandler handler);
 
-    // destructor
-    ~CTcpListener();
+  // destructor
+  ~TcpListener();
 
-    // public methods
+  // public methods
 
-    // Send message to client
-    void sendMessage(int clientSocket, std::string msg);
+  // Send message to client
+  void sendMessage(int clientSocket, std::string msg);
 
-    // Initialize
-    bool init();
+  // Initialize
+  bool init();
 
-    // Main process loop
-    void run();
+  // Main process loop
+  void run();
 
-    // Cleanup
-    void cleanup();
+  // Cleanup
+  void cleanup();
 
-
-  private:
+ private:
   // private methods
   int createSocket();
 
   int waitForConnection(int listening);
 
   // private members
-  std::string             m_ipAddress;
-  int                     m_port;
-  MessageReceivedHandler  MessageReceived;
+  std::string m_ipAddress;
+  int m_port;
+  MessageReceivedHandler MessageReceived;
 };
