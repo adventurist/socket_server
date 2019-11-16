@@ -1,14 +1,16 @@
+#include "headers/socket_listener.h"
+
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include <iostream>
 #include <string>
 
-#include <sys/socket.h>
 #include "headers/constants.h"
-#include "headers/socket_listener.h"
 
 int listening() { return socket(AF_INET, SOCK_STREAM, 0); }
 
@@ -53,8 +55,8 @@ void SocketListener::run() {
         if (bytesReceived > 0) {
           // TODO: Verify that we aren't producig undefined behaviour
           buffer_string += buf;
-          std::cout << "Received: " << buffer_string << std::endl;
-          onMessageReceived(socket, buffer_string);
+          std::cout << "Received: " << buf << std::endl;
+          onMessageReceived(socket, std::string(buf));
         } else {
           std::cout << "client disconnected" << std::endl;
           break;
