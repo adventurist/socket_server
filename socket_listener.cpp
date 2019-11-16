@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include "headers/constants.h"
 #include "headers/socket_listener.h"
+
 int listening() { return socket(AF_INET, SOCK_STREAM, 0); }
 
 SocketListener::SocketListener(std::string ip_address, int port)
@@ -30,7 +31,7 @@ bool SocketListener::init() {
 
 // Main process loop
 void SocketListener::run() {
-  char* buf[MAX_BUFFER_SIZE];
+  char buf[MAX_BUFFER_SIZE];
 
   while (true) {
     int listening = createSocket();
@@ -43,21 +44,23 @@ void SocketListener::run() {
 
     if (socket != SOCKET_ERROR) {
       close(listening);
-
+      std::string buffer_string;
       while (true) {
         memset(buf, 0, MAX_BUFFER_SIZE);
         int bytesReceived = 0;
-        bytesReceived = recv(socket, buf, MAX_BUFFER_SIZE, 0);
+        bytesReceived = recv(socket, buf, MAX_BUFFER_SIZE - 2, 0);
+        buf[MAX_BUFFER_SIZE - 1] = 0;
         if (bytesReceived > 0) {
-          // TODO: implement a proper C++ cast
-          const char* constString = (const char*)buf;
-          std::cout << "Received: " << constString << std::endl;
-          onMessageReceived(socket, std::string(constString));
+          // TODO: Verify that we aren't producig undefined behaviour
+          buffer_string += buf;
+          std::cout << "Received: " << buffer_string << std::endl;
+          onMessageReceived(socket, buffer_string);
         } else {
           std::cout << "client disconnected" << std::endl;
           break;
         }
       }
+      memset(buf, 0, MAX_BUFFER_SIZE);
       close(socket);
     }
   }
@@ -76,7 +79,7 @@ int SocketListener::createSocket() {
     hint.sin_port = htons(m_port);
     inet_pton(AF_INET, m_ip_address.c_str(), &hint.sin_addr);
 
-    int bind_result = bind(listening, (sockaddr*)&hint, sizeof(hint));
+    int bind_result = bind(listening, (sockaddr *)&hint, sizeof(hint));
     if (bind_result != SOCKET_ERROR) {
       int listen_result = listen(listening, SOMAXCONN);
       if (listen_result == SOCKET_ERROR) {
@@ -86,7 +89,6 @@ int SocketListener::createSocket() {
       return WAIT_SOCKET_FAILURE;
     }
   }
-
   return listening;
 }
 
@@ -98,3 +100,4 @@ int SocketListener::waitForConnection(int listening) {
 void SocketListener::onMessageReceived(int socket_id, std::string message) {
   sendMessage(socket_id, message);
 }
+
