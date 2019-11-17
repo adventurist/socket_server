@@ -1,6 +1,5 @@
 // Project headers
 #include "headers/socket_listener.h"
-
 #include "headers/constants.h"
 // System libraries
 #include <arpa/inet.h>
