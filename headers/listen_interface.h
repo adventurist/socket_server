@@ -4,6 +4,7 @@
 #include <string>
 
 class ListenInterface {
+ public:
   virtual void onMessageReceived(int socket_id, std::string message) = 0;
 };
 

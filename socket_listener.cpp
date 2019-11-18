@@ -1,5 +1,6 @@
 // Project headers
 #include "headers/socket_listener.h"
+
 #include "headers/constants.h"
 // System libraries
 #include <arpa/inet.h>
@@ -29,10 +30,10 @@ SocketListener::~SocketListener() { cleanup(); }
  * sendMessage
  * @method
  * Send a null-terminated array of characters, supplied as a const char pointer,
- * to a client socket
+ * to a client socket described by its file descriptor
  */
-void SocketListener::sendMessage(int clientSocket, std::string msg) {
-  send(clientSocket, msg.c_str(), msg.size() + 1, 0);
+void SocketListener::sendMessage(int client_socket_fd, std::string msg) {
+  send(client_socket_fd, msg.c_str(), msg.size() + 1, 0);
 }
 
 /**
@@ -65,7 +66,7 @@ void SocketListener::run() {
     // wait for a client connection and get its socket file descriptor
     int client_socket_fd = waitForConnection(listening_socket_fd);
 
-    if (socket != SOCKET_ERROR) {
+    if (client_socket_fd != SOCKET_ERROR) {
       // Destroy listening socket and deallocate its file descriptor. Only use
       // the client socket now.
       close(listening_socket_fd);
@@ -85,7 +86,7 @@ void SocketListener::run() {
           std::cout << "Bytes received: " << bytes_received << "\nData: " << buf
                     << std::endl;
           // Handle incoming message
-          onMessageReceived(socket, std::string(buf));
+          onMessageReceived(client_socket_fd, std::string(buf));
         } else {
           std::cout << "client disconnected" << std::endl;
           break;

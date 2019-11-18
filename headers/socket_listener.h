@@ -1,17 +1,18 @@
 #ifndef __SOCKET_LISTENER_H__
 #define __SOCKET_LISTENER_H__
-
-#include <sys/socket.h>
-#include <string>
+// Project libraries
 #include "listen_interface.h"
+#include "send_interface.h"
+
+// System libraries
+#include <sys/socket.h>
+
+// C++ Libraries
+#include <string>
 
 #define MAX_BUFFER_SIZE (49152)
 
-// typedef void (*MessageReceivedHandler)(SocketListener* listener, int
-// socketId,
-//                                       std::string msg);
-
-class SocketListener : ListenInterface {
+class SocketListener : public ListenInterface, public SendInterface {
  public:
   // constructor
   SocketListener(std::string ipAddress, int port);
@@ -19,21 +20,29 @@ class SocketListener : ListenInterface {
   // destructor
   ~SocketListener();
 
-  // public methods
+  /**
+   * Send a message to a client socket described by its file descriptor
+   * @param[in] {int} client_socket_fd The client socket file descriptor
+   * @param[in] {std::string} The message to be sent
+   */
+  virtual void sendMessage(int client_socket_fd, std::string message) override;
 
-  // Send message to client
-  void sendMessage(int socket, std::string msg);
-
-  // Initialize
+  /**
+   * Perform intialization work
+   */
   bool init();
 
-  // Main process loop
+  /**
+   * Main message loop
+   */
   void run();
 
-  // Cleanup
+  /**
+   * Perform any cleanup work
+   */
   void cleanup();
 
-  void onMessageReceived(int socket_id, std::string message);
+  virtual void onMessageReceived(int socket_id, std::string message) override;
 
  private:
   // private methods
