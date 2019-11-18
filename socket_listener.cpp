@@ -32,8 +32,8 @@ SocketListener::~SocketListener() { cleanup(); }
  * Send a null-terminated array of characters, supplied as a const char pointer,
  * to a client socket described by its file descriptor
  */
-void SocketListener::sendMessage(int client_socket_fd, std::string msg) {
-  send(client_socket_fd, msg.c_str(), msg.size() + 1, 0);
+void SocketListener::sendMessage(int client_socket_fd, std::string message) {
+  send(client_socket_fd, message.c_str(), message.size() + 1, 0);
 }
 
 /**
