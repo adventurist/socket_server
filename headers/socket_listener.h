@@ -42,7 +42,8 @@ class SocketListener : public ListenInterface, public SendInterface {
    */
   void cleanup();
 
-  virtual void onMessageReceived(int socket_id, std::string message) override;
+  virtual static void onMessageReceived(int socket_id,
+                                        std::string message) override;
 
  private:
   // private methods

@@ -5,7 +5,7 @@
 
 class ListenInterface {
  public:
-  virtual void onMessageReceived(int socket_id, std::string message) = 0;
+  virtual static void onMessageReceived(int socket_id, std::string message) = 0;
 };
 
 #endif  // __LISTEN_INTERFACE_H__
