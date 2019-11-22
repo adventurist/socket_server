@@ -26,7 +26,10 @@
  * Initialize with ip_address, port and message_handler
  */
 SocketListener::SocketListener(std::string ip_address, int port)
-    : m_ip_address(ip_address), m_port(port), accepting_tasks(true), shutdown_loop(false) {}
+    : m_ip_address(ip_address),
+      m_port(port),
+      accepting_tasks(true),
+      shutdown_loop(false) {}
 
 /**
  * Destructor
@@ -39,20 +42,12 @@ SocketListener::MessageHandler SocketListener::createMessageHandler(
   return MessageHandler(cb);
 }
 
-/*
-  **setMessageHandler *@method *Set the function to handle received
-   messages * /
-
-  // SocketListener::setMessageHandler(MessageHandler message_handler) {
-  //   m_message_handler = message_handler;
-  // }
-
-  /**
-   * sendMessage
-   * @method
-   * Send a null-terminated array of characters, supplied as a const char
-   * pointer, to a client socket described by its file descriptor
-   */
+/**
+ * sendMessage
+ * @method
+ * Send a null-terminated array of characters, supplied as a const char
+ * pointer, to a client socket described by its file descriptor
+ */
 void SocketListener::sendMessage(int client_socket_fd,
                                  std::shared_ptr<char[]> s_ptr) {
   send(client_socket_fd, s_ptr.get(), static_cast<size_t>(MAX_BUFFER_SIZE) + 1,
@@ -99,10 +94,9 @@ void SocketListener::loop_check() {
   }
 }
 
-
-void SocketListener::handle_client_socket(int client_socket_fd,
-                          SocketListener::MessageHandler message_handler,
-                          std::shared_ptr<char[]> buf) {
+void SocketListener::handle_client_socket(
+    int client_socket_fd, SocketListener::MessageHandler message_handler,
+    std::shared_ptr<char[]> buf) {
   // char buf[MAX_BUFFER_SIZE] =
   //     {};  // Declare, define and initialize a character buffer
   // std::string buffer_string{};  // Initialize a string buffer
@@ -164,8 +158,8 @@ void SocketListener::run() {
       };
       MessageHandler message_handler = createMessageHandler(message_send_fn);
       std::cout << "Pushing client to queue" << std::endl;
-      push_to_queue(std::bind(&SocketListener::handle_client_socket, this, client_socket_fd,
-                              message_handler, s_ptr));
+      push_to_queue(std::bind(&SocketListener::handle_client_socket, this,
+                              client_socket_fd, message_handler, s_ptr));
       loop_check();
       std::cout << "At the end" << std::endl;
     }
@@ -177,7 +171,8 @@ void SocketListener::run() {
  * @method
  * TODO: Determine if we should be cleaning up buffer memory
  */
-void SocketListener::cleanup() { std::cout << "Cleaning up" << std::endl;
+void SocketListener::cleanup() {
+  std::cout << "Cleaning up" << std::endl;
   if (m_loop_thread.joinable()) {
     m_loop_thread.join();
   }
@@ -202,7 +197,8 @@ int SocketListener::createSocket() {
               &socket_struct.sin_addr);
 
     int socket_option = 1;
-    setsockopt(listening_socket_fd, SOL_SOCKET, SO_REUSEADDR, &socket_option, sizeof(socket_option));
+    setsockopt(listening_socket_fd, SOL_SOCKET, SO_REUSEADDR, &socket_option,
+               sizeof(socket_option));
 
     // Bind local socket address to socket file descriptor
     int bind_result = bind(
