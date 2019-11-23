@@ -14,10 +14,10 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
-#include <queue>
-#include <mutex>
 #include <vector>
 
 class SocketListener : public SendInterface {
@@ -73,13 +73,17 @@ class SocketListener : public SendInterface {
 
   void loop_check();
 
+  void done();
+
   void handle_loop();
+
+  void detachThreads();
 
   void push_to_queue(std::function<void()> fn);
 
   void handle_client_socket(int client_socket_fd,
-                          SocketListener::MessageHandler message_handler,
-                          std::shared_ptr<char[]> buf);
+                            SocketListener::MessageHandler message_handler,
+                            std::shared_ptr<char[]> buf);
 
   // private members
   std::string m_ip_address;
