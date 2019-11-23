@@ -29,8 +29,6 @@ class SocketListener : public SendInterface {
     void operator()() { m_cb(); }
 
    private:
-    //    int m_client_socket_fd;
-    //    std::shared_ptr<char[]> m_char_ptr;
     std::function<void()> m_cb;
   };
   // constructor
