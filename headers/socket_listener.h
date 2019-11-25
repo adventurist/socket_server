@@ -32,7 +32,7 @@ class SocketListener : public SendInterface {
     std::function<void()> m_cb;
   };
   // constructor
-  SocketListener(std::string ipAddress, int port);
+  SocketListener(std::string ip_address, int port);
 
   // destructor
   ~SocketListener();
@@ -43,7 +43,7 @@ class SocketListener : public SendInterface {
    * @param[in] {std::string} The message to be sent
    */
   virtual void sendMessage(int client_socket_fd,
-                           std::shared_ptr<char[]> buffer) override;
+                           std::weak_ptr<char[]> w_buffer_ptr) override;
 
   MessageHandler createMessageHandler(std::function<void()> cb);
   /**
@@ -69,31 +69,31 @@ class SocketListener : public SendInterface {
 
   int waitForConnection(int listening);
 
-  void loop_check();
+  void loopCheck();
 
   void done();
 
-  void handle_loop();
+  void handleLoop();
 
   void detachThreads();
 
-  void push_to_queue(std::function<void()> fn);
+  void pushToQueue(std::function<void()> fn);
 
-  void handle_client_socket(int client_socket_fd,
-                            SocketListener::MessageHandler message_handler,
-                            std::shared_ptr<char[]> buf);
+  void handleClientSocket(int client_socket_fd,
+                          SocketListener::MessageHandler message_handler,
+                          const std::shared_ptr<char[]>& s_buffer_ptr);
 
-  // private members
+  /* private members */
+  // Server arguments
   std::string m_ip_address;
   int m_port;
+
   std::thread m_loop_thread;
-  std::queue<std::function<void()>> task_queue;
   std::mutex m_mutex_lock;
   std::condition_variable pool_condition;
   std::atomic<bool> accepting_tasks;
-  std::atomic<bool> shutdown_loop;
-  std::atomic<bool> m_loop_switch;
 
+  std::queue<std::function<void()>> task_queue;
   std::vector<std::thread> thread_pool;
 };
 
