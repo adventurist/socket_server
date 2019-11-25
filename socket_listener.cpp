@@ -26,8 +26,27 @@ int num_threads = std::thread::hardware_concurrency();
  * Constructor
  * Initialize with ip_address, port and message_handler
  */
-SocketListener::SocketListener(std::string ip_address, int port)
-    : m_ip_address(ip_address), m_port(port), accepting_tasks(true) {}
+SocketListener::SocketListener(int arg_num, char** args)
+    : m_port(-1), accepting_tasks(true) {
+  for (int i = 0; i < arg_num; i++) {
+    std::string argument = std::string(args[i]);
+    std::cout << args[i] << std::endl;
+    if (argument.find("--ip") != -1) {
+      m_ip_address = argument.substr(5);
+      continue;
+    }
+    if (argument.find("--port") != -1) {
+      m_port = std::stoi(argument.substr(7));
+      continue;
+    }
+    if (m_ip_address.empty()) {
+      m_ip_address = "0.0.0.0";
+    }
+    if (m_port == -1) {
+      m_port = 9009;
+    }
+  }
+}
 
 /**
  * Destructor

@@ -11,8 +11,7 @@
  */
 
 int main(int argc, char** argv) {
-  SocketListener server("0.0.0.0", 9009);
-
+  SocketListener server(argc, argv);
   if (server.init()) {
     std::cout << "Running message loop" << std::endl;
     server.run();

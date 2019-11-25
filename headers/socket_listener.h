@@ -32,7 +32,7 @@ class SocketListener : public SendInterface {
     std::function<void()> m_cb;
   };
   // constructor
-  SocketListener(std::string ip_address, int port);
+  SocketListener(int arg_num, char** args);
 
   // destructor
   ~SocketListener();
