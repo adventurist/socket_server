@@ -2,22 +2,18 @@
 #define __SOCKET_LISTENER_H__
 
 // Project libraries
-#include "send_interface.h"
-#include "types.h"
+#include "send_interface.hpp"
+#include "task_queue.hpp"
+#include "types.hpp"
 
 // System libraries
 #include <sys/socket.h>
 
 // C++ Libraries
-#include <atomic>
-#include <condition_variable>
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <mutex>
-#include <queue>
 #include <string>
-#include <thread>
 #include <vector>
 
 class SocketListener : public SendInterface {
@@ -69,16 +65,6 @@ class SocketListener : public SendInterface {
 
   int waitForConnection(int listening);
 
-  void loopCheck();
-
-  void done();
-
-  void handleLoop();
-
-  void detachThreads();
-
-  void pushToQueue(std::function<void()> fn);
-
   void handleClientSocket(int client_socket_fd,
                           SocketListener::MessageHandler message_handler,
                           const std::shared_ptr<char[]>& s_buffer_ptr);
@@ -87,14 +73,7 @@ class SocketListener : public SendInterface {
   // Server arguments
   std::string m_ip_address;
   int m_port;
-
-  std::thread m_loop_thread;
-  std::mutex m_mutex_lock;
-  std::condition_variable pool_condition;
-  std::atomic<bool> accepting_tasks;
-
-  std::queue<std::function<void()>> task_queue;
-  std::vector<std::thread> thread_pool;
+  std::unique_ptr<TaskQueue> u_task_queue_ptr;
 };
 
 #endif  // __SOCKET_LISTENER_H__
