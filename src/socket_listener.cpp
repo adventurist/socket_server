@@ -157,7 +157,6 @@ void SocketListener::run() {
             std::bind(&SocketListener::handleClientSocket, this,
                       client_socket_fd, message_handler,
                       std::forward<std::shared_ptr<char[]>>(s_buffer_ptr)));
-        u_task_queue_ptr->notifyPool();
       }
     }
   }
