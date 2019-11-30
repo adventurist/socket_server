@@ -57,6 +57,11 @@ SocketListener::MessageHandler SocketListener::createMessageHandler(
   return MessageHandler(cb);
 }
 
+void SocketListener::onMessageReceived(int client_socket_fd,
+                                       std::weak_ptr<char[]> w_buffer_ptr) {
+  sendMessage(client_socket_fd, w_buffer_ptr);
+}
+
 /**
  * sendMessage
  * @method
@@ -73,6 +78,22 @@ void SocketListener::sendMessage(int client_socket_fd,
     std::cout << "Could not send message to client " << client_socket_fd
               << ". Buffer does not exist." << std::endl;
   }
+}
+
+void SocketListener::sendMessage(int client_socket_fd, char* message,
+                                 bool short_message) {
+  if (short_message) {
+    send(client_socket_fd, message, static_cast<size_t>(SMALL_BUFFER_SIZE) + 1,
+         0);
+  } else {
+    send(client_socket_fd, message, static_cast<size_t>(MAX_BUFFER_SIZE) + 1,
+         0);
+  }
+}
+
+void SocketListener::sendMessage(int client_socket_fd, char buffer[],
+                                 size_t size) {
+  send(client_socket_fd, buffer, size + 1, 0);
 }
 
 /**
@@ -149,7 +170,7 @@ void SocketListener::run() {
         std::weak_ptr<char[]> w_buffer_ptr(s_buffer_ptr);
         std::function<void()> message_send_fn = [this, client_socket_fd,
                                                  w_buffer_ptr]() {
-          this->sendMessage(client_socket_fd, w_buffer_ptr);
+          this->onMessageReceived(client_socket_fd, w_buffer_ptr);
         };
         MessageHandler message_handler = createMessageHandler(message_send_fn);
         std::cout << "Pushing client to queue" << std::endl;
@@ -213,8 +234,8 @@ int SocketListener::createSocket() {
 /**
  * waitForConnection
  * @method
- * Takes first connection on queue of pending connections, creates a new socket
- * and returns its file descriptor
+ * Takes first connection on queue of pending connections, creates a new
+ * socket and returns its file descriptor
  */
 int SocketListener::waitForConnection(int listening_socket) {
   int client_socket_fd = accept(listening_socket, NULL, NULL);

@@ -41,6 +41,10 @@ class SocketListener : public SendInterface {
   virtual void sendMessage(int client_socket_fd,
                            std::weak_ptr<char[]> w_buffer_ptr) override;
 
+  void sendMessage(int client_socket_fd, char* message, bool short_message);
+
+  void sendMessage(int client_socket_fd, char* message, size_t size);
+
   MessageHandler createMessageHandler(std::function<void()> cb);
   /**
    * Perform intialization work
@@ -62,6 +66,9 @@ class SocketListener : public SendInterface {
  private:
   // private methods
   int createSocket();
+
+  void onMessageReceived(int client_socket_fd,
+                         std::weak_ptr<char[]> w_buffer_ptr);
 
   int waitForConnection(int listening);
 
