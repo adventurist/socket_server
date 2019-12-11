@@ -59,6 +59,7 @@ SocketListener::MessageHandler SocketListener::createMessageHandler(
 
 void SocketListener::onMessageReceived(int client_socket_fd,
                                        std::weak_ptr<char[]> w_buffer_ptr) {
+  std::cout << "This should be overridden" << std::endl;
   sendMessage(client_socket_fd, w_buffer_ptr);
 }
 
@@ -92,6 +93,11 @@ void SocketListener::sendMessage(int client_socket_fd, char* message,
 }
 
 void SocketListener::sendMessage(int client_socket_fd, char buffer[],
+                                 size_t size) {
+  send(client_socket_fd, buffer, size + 1, 0);
+}
+
+void SocketListener::sendMessage(int client_socket_fd, const char* buffer,
                                  size_t size) {
   send(client_socket_fd, buffer, size + 1, 0);
 }
