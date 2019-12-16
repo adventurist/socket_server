@@ -4,6 +4,15 @@
 #include <memory>
 #include <string>
 
+/**
+ * SendInterface
+ *
+ * A public interface whose implementation sends a buffer of characters to the
+ * socket connection indicated by the client_socket_fd (client socket file
+ * descriptor)
+ *
+ * @interface
+ */
 class SendInterface {
  public:
   virtual void sendMessage(int client_socket_fd,

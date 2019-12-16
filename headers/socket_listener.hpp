@@ -2,7 +2,8 @@
 #define __SOCKET_LISTENER_H__
 
 // Project libraries
-#include "send_interface.hpp"
+#include "interface/listen_interface.hpp"
+#include "interface/send_interface.hpp"
 #include "task_queue.hpp"
 #include "types.hpp"
 
@@ -16,8 +17,22 @@
 #include <string>
 #include <vector>
 
-class SocketListener : public SendInterface {
+/**
+ * SocketListener
+ *
+ * SocketListener is extensible to aid in architecting a socket server
+ */
+class SocketListener : public SendInterface, public ListenInterface {
  public:
+  /* public classes whose instances are used by SocketListener */
+
+  /**
+   * MessageHandler
+   *
+   * Instances of this object type wrap a generic, self-contained function and
+   * behave as callable functions (functors)
+   * @class
+   */
   class MessageHandler {
    public:
     MessageHandler(std::function<void()> cb) : m_cb(cb) {}
@@ -40,7 +55,7 @@ class SocketListener : public SendInterface {
    */
   virtual void sendMessage(int client_socket_fd,
                            std::weak_ptr<char[]> w_buffer_ptr) override;
-
+  /** overload variants */
   void sendMessage(int client_socket_fd, char* message, bool short_message);
 
   void sendMessage(int client_socket_fd, char* message, size_t size);
@@ -63,14 +78,12 @@ class SocketListener : public SendInterface {
    */
   void cleanup();
 
-  // virtual void setMessageHandler(MessageHandler message_handler) override;
-
  private:
   // private methods
   int createSocket();
 
   virtual void onMessageReceived(int client_socket_fd,
-                                 std::weak_ptr<char[]> w_buffer_ptr);
+                                 std::weak_ptr<char[]> w_buffer_ptr) override;
 
   int waitForConnection(int listening);
 
