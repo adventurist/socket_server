@@ -54,7 +54,7 @@ class SocketListener : public SendInterface, public ListenInterface {
    * @param[in] {std::string} The message to be sent
    */
   virtual void sendMessage(int client_socket_fd,
-                           std::weak_ptr<char[]> w_buffer_ptr) override;
+                           std::weak_ptr<uint8_t[]> w_buffer_ptr) override;
   /** overload variants */
   void sendMessage(int client_socket_fd, char* message, bool short_message);
 
@@ -82,14 +82,14 @@ class SocketListener : public SendInterface, public ListenInterface {
   // private methods
   int createSocket();
 
-  virtual void onMessageReceived(int client_socket_fd,
-                                 std::weak_ptr<char[]> w_buffer_ptr) override;
+  virtual void onMessageReceived(
+      int client_socket_fd, std::weak_ptr<uint8_t[]> w_buffer_ptr) override;
 
   int waitForConnection(int listening);
 
   void handleClientSocket(int client_socket_fd,
                           SocketListener::MessageHandler message_handler,
-                          const std::shared_ptr<char[]>& s_buffer_ptr);
+                          const std::shared_ptr<uint8_t[]>& s_buffer_ptr);
 
   /* private members */
   // Server arguments

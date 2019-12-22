@@ -58,7 +58,7 @@ SocketListener::MessageHandler SocketListener::createMessageHandler(
 }
 
 void SocketListener::onMessageReceived(int client_socket_fd,
-                                       std::weak_ptr<char[]> w_buffer_ptr) {
+                                       std::weak_ptr<uint8_t[]> w_buffer_ptr) {
   std::cout << "This should be overridden" << std::endl;
   sendMessage(client_socket_fd, w_buffer_ptr);
 }
@@ -66,12 +66,12 @@ void SocketListener::onMessageReceived(int client_socket_fd,
 /**
  * sendMessage
  * @method
- * Send a null-terminated array of characters, supplied as a const char
+ * Send a null-terminated array of characters, supplied as a const uint8_t
  * pointer, to a client socket described by its file descriptor
  */
 void SocketListener::sendMessage(int client_socket_fd,
-                                 std::weak_ptr<char[]> w_buffer_ptr) {
-  std::shared_ptr<char[]> s_buffer_ptr = w_buffer_ptr.lock();
+                                 std::weak_ptr<uint8_t[]> w_buffer_ptr) {
+  std::shared_ptr<uint8_t[]> s_buffer_ptr = w_buffer_ptr.lock();
   if (s_buffer_ptr) {
     send(client_socket_fd, s_buffer_ptr.get(),
          static_cast<size_t>(MAX_BUFFER_SIZE) + 1, 0);
@@ -115,7 +115,7 @@ bool SocketListener::init() {
 
 void SocketListener::handleClientSocket(
     int client_socket_fd, SocketListener::MessageHandler message_handler,
-    const std::shared_ptr<char[]>& s_buffer_ptr) {
+    const std::shared_ptr<uint8_t[]>& s_buffer_ptr) {
   for (;;) {
     memset(s_buffer_ptr.get(), 0,
            MAX_BUFFER_SIZE);  // Zero the character buffer
@@ -172,8 +172,8 @@ void SocketListener::run() {
       // the client socket now.
       close(listening_socket_fd);
       {
-        std::shared_ptr<char[]> s_buffer_ptr(new char[MAX_BUFFER_SIZE]);
-        std::weak_ptr<char[]> w_buffer_ptr(s_buffer_ptr);
+        std::shared_ptr<uint8_t[]> s_buffer_ptr(new uint8_t[MAX_BUFFER_SIZE]);
+        std::weak_ptr<uint8_t[]> w_buffer_ptr(s_buffer_ptr);
         std::function<void()> message_send_fn = [this, client_socket_fd,
                                                  w_buffer_ptr]() {
           this->onMessageReceived(client_socket_fd, w_buffer_ptr);
@@ -183,7 +183,7 @@ void SocketListener::run() {
         u_task_queue_ptr->pushToQueue(
             std::bind(&SocketListener::handleClientSocket, this,
                       client_socket_fd, message_handler,
-                      std::forward<std::shared_ptr<char[]>>(s_buffer_ptr)));
+                      std::forward<std::shared_ptr<uint8_t[]>>(s_buffer_ptr)));
       }
     }
   }

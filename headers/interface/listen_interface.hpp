@@ -16,7 +16,7 @@
 class ListenInterface {
  public:
   virtual void onMessageReceived(int client_socket_fd,
-                                 std::weak_ptr<char[]> w_buffer_ptr) = 0;
+                                 std::weak_ptr<uint8_t[]> w_buffer_ptr) = 0;
 };
 
 #endif  // __LISTEN_INTERFACE_H__
