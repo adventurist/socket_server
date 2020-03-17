@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+g++ -std=c++17 -g -I headers -pthread src/main.cpp src/socket_listener.cpp src/task_queue.cpp -o ws_server
