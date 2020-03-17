@@ -1,7 +1,5 @@
 // Project headers
-#include "../headers/socket_listener.hpp"
-
-#include "../headers/constants.hpp"
+#include <socket_listener.hpp>
 // System libraries
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -10,16 +8,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 // C++ Libraries
-#include <atomic>
-#include <chrono>
-#include <condition_variable>
-#include <functional>
 #include <iostream>
 #include <memory>
-#include <queue>
 #include <string>
-#include <thread>
-#include <vector>
 
 /**
  * Constructor
@@ -53,14 +44,19 @@ SocketListener::SocketListener(int arg_num, char** args) : m_port(-1) {
 SocketListener::~SocketListener() { cleanup(); }
 
 SocketListener::MessageHandler SocketListener::createMessageHandler(
-    std::function<void()> cb) {
+    std::function<void(ssize_t)> cb) {
   return MessageHandler(cb);
 }
 
 void SocketListener::onMessageReceived(int client_socket_fd,
-                                       std::weak_ptr<uint8_t[]> w_buffer_ptr) {
+                                       std::weak_ptr<uint8_t[]> w_buffer_ptr,
+                                       ssize_t& size) {
   std::cout << "This should be overridden" << std::endl;
   sendMessage(client_socket_fd, w_buffer_ptr);
+}
+
+void SocketListener::onConnectionClose(int client_socket_fd) {
+  std::cout << "This should be overridden" << std::endl;
 }
 
 /**
@@ -119,24 +115,22 @@ void SocketListener::handleClientSocket(
   for (;;) {
     memset(s_buffer_ptr.get(), 0,
            MAX_BUFFER_SIZE);  // Zero the character buffer
-    int bytes_received = 0;
     // Receive and write incoming data to buffer and return the number of
     // bytes received
-    bytes_received =
-        recv(client_socket_fd, s_buffer_ptr.get(),
-             MAX_BUFFER_SIZE - 2,  // Leave room for null-termination
-             0);
-    s_buffer_ptr.get()[MAX_BUFFER_SIZE - 1] =
-        0;  // Null-terminate the character buffer
-    if (bytes_received > 0) {
-      std::cout << "Client " << client_socket_fd
-                << "\nBytes received: " << bytes_received
-                << "\nData: " << s_buffer_ptr.get() << std::endl;
+    ssize_t size = recv(client_socket_fd, s_buffer_ptr.get(),
+                        MAX_BUFFER_SIZE,  // Leave room for null-termination ?
+                        0);
+    //    s_buffer_ptr.get()[MAX_BUFFER_SIZE - 1] =
+    //        0;  // Null-terminate the character buffer
+    if (size > 0) {
+      std::cout << "Client " << client_socket_fd << "\nBytes received: " << size
+                << "\nData: " << std::hex << s_buffer_ptr.get() << std::endl;
       // Handle incoming message
-      message_handler();
+      message_handler(size);
     } else {
       std::cout << "Client " << client_socket_fd << " disconnected"
                 << std::endl;
+      onConnectionClose(client_socket_fd);
       // Zero the buffer again before closing
       memset(s_buffer_ptr.get(), 0, MAX_BUFFER_SIZE);
       break;
@@ -174,10 +168,12 @@ void SocketListener::run() {
       {
         std::shared_ptr<uint8_t[]> s_buffer_ptr(new uint8_t[MAX_BUFFER_SIZE]);
         std::weak_ptr<uint8_t[]> w_buffer_ptr(s_buffer_ptr);
-        std::function<void()> message_send_fn = [this, client_socket_fd,
-                                                 w_buffer_ptr]() {
-          this->onMessageReceived(client_socket_fd, w_buffer_ptr);
-        };
+        // TODO: Stop the use of this size variable, by changing the
+        // specification of handleClientSocket
+        std::function<void(ssize_t)> message_send_fn =
+            [this, client_socket_fd, w_buffer_ptr](ssize_t size) {
+              this->onMessageReceived(client_socket_fd, w_buffer_ptr, size);
+            };
         MessageHandler message_handler = createMessageHandler(message_send_fn);
         std::cout << "Pushing client to queue" << std::endl;
         u_task_queue_ptr->pushToQueue(

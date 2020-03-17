@@ -3,7 +3,7 @@
 
 #include <string>
 
-#define MAX_BUFFER_SIZE (49152)
+#define MAX_BUFFER_SIZE (4096)
 #define SMALL_BUFFER_SIZE (8192)
 
 template <typename MessageProcessor>
