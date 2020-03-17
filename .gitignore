@@ -1,0 +1,6 @@
+Makefile
+CMakeCache.txt
+CMakeFiles
+*.cmake
+tags
+ws_server
