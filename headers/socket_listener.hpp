@@ -2,11 +2,11 @@
 #define __SOCKET_LISTENER_HPP__
 
 // Project libraries
-#include <interface/listen_interface.hpp>
-#include <interface/send_interface.hpp>
-#include <task_queue.hpp>
-#include <types.hpp>
-#include <constants.hpp>
+#include "constants.hpp"
+#include "interface/listen_interface.hpp"
+#include "interface/send_interface.hpp"
+#include "task_queue.hpp"
+#include "types.hpp"
 // System libraries
 #include <sys/socket.h>
 
@@ -66,7 +66,7 @@ class SocketListener : public SendInterface, public ListenInterface {
   /**
    * Perform intialization work
    */
-  bool init();
+  void init(bool test_mode = false);
 
   /**
    * Main message loop
@@ -96,9 +96,11 @@ class SocketListener : public SendInterface, public ListenInterface {
 
   /* private members */
   // Server arguments
-  std::string m_ip_address;
-  int m_port;
-  std::unique_ptr<TaskQueue> u_task_queue_ptr;
+  std::string                 m_ip_address;
+  int                         m_port;
+  std::unique_ptr<TaskQueue>  u_task_queue_ptr;
+  bool                        m_service_enabled;
+  bool                        m_test_mode;
 };
 
 #endif  // __SOCKET_LISTENER_HPP__

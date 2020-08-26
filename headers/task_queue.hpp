@@ -64,13 +64,12 @@ class TaskQueue {
  */
   void deployWorkers();
 /**
- * detachThreads
+ * cleanUp
  *
  * Allows threads to terminate.
  * @method
- * @cleanup
  */
-  void detachThreads();
+  void cleanUp();
 
 /** PRIVATE MEMBERS **/
 
@@ -96,4 +95,6 @@ class TaskQueue {
    * atomic boolean to ensure queue is handled in a thread-safe manner
    */
   std::atomic<bool> accepting_tasks;
+
+  bool m_active;
 };

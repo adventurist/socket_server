@@ -1,4 +1,4 @@
-#include <task_queue.hpp>
+#include "../headers/task_queue.hpp"
 
 #include <iostream>
 
@@ -13,13 +13,16 @@ int num_threads = std::thread::hardware_concurrency();
  * @constructor
  * Nothing fancy
  */
-TaskQueue::TaskQueue() {}
+TaskQueue::TaskQueue()
+  : m_active(true) {}
 /**
  * @destructor
  * Make sure all worker threads detach or join before destroying TaskQueue
  * instance
  */
-TaskQueue::~TaskQueue() { detachThreads(); }
+TaskQueue::~TaskQueue() {
+  cleanUp();
+}
 
 /**
  * pushToQueue
@@ -45,20 +48,22 @@ void TaskQueue::pushToQueue(std::function<void()> fn) {
  */
 void TaskQueue::workerLoop() {
   std::function<void()> fn;
-  for (;;) {
+  for(;;) {
     {  // encapsulate atomic management of queue
       std::unique_lock<std::mutex> lock(m_mutex_lock);  // obtain mutex
       pool_condition
           .wait(  // condition: not accepting tasks or queue is not empty
               lock,
-              [this]() { return !accepting_tasks || !m_task_queue.empty(); });
-      std::cout << "Wait condition met" << std::endl;
+              [this]() { return !accepting_tasks || !m_task_queue.empty() || m_active;});
+
+      if (!m_active) {
+        break;
+      }
       if (!accepting_tasks && m_task_queue.empty()) {
         // If the queue is empty, it's safe to begin accepting tasks
         accepting_tasks = true;
         continue;
       }
-      std::cout << "Taking task" << std::endl;
       fn = m_task_queue.front();  // obtain task from FIFO container
       m_task_queue.pop();
       accepting_tasks = true;  // begin accepting before lock expires
@@ -96,16 +101,16 @@ void TaskQueue::deployWorkers() {
 void TaskQueue::initialize() { deployWorkers(); }
 
 /**
- * detachThreads
+ * cleanUp
  *
  * Allows threads to terminate.
  * @method
- * @cleanup
  */
-void TaskQueue::detachThreads() {
+void TaskQueue::cleanUp() {
+  pool_condition.notify_all();
   for (std::thread& t : m_thread_pool) {
     if (t.joinable()) {
-      t.detach();
+      t.join();
     }
   }
 }

@@ -12,10 +12,9 @@
 
 int main(int argc, char** argv) {
   SocketListener server(argc, argv);
-  if (server.init()) {
-    std::cout << "Running message loop" << std::endl;
-    server.run();
-  }
+  server.init();
+  server.run();
+
   return 0;
 }
 

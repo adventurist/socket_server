@@ -7,9 +7,8 @@ set(SOURCES "src/main.cpp" "src/socket_listener.cpp" "src/task_queue.cpp")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -std=c++17 -pthread")
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_library(${LISTENERLIB} ${SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PUBLIC
   "headers"
-  "headers/interface"
 )
 target_link_libraries(${PROJECT_NAME} Threads::Threads)
 
